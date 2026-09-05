@@ -3,7 +3,9 @@ Automated Pytest Test Suite for Sphincs Stateless Hash Sign.
 Domain: Post-Quantum Cryptography & Hardware Security
 Standard: NIST FIPS 203/204/205 / ISO/IEC 17825 Standards
 """
+import os
 import sys
+import tempfile
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
@@ -12,7 +14,7 @@ from agents.base import PHIGuard, AuditLogger, SecurityException
 from agents.models import SystemTaskPayload, UrgencyLevel, SystemIntegrityStatus
 from agents.workers import InvariantQCWorker, SafetyEscalationWorker, ProtocolConformanceWorker
 from agents.supervisor import SystemSupervisor
-from cli import main
+from cli import main, _resolve_safe_path
 
 
 def test_phi_guard_enforcement():
@@ -63,3 +65,45 @@ def test_supervisor_consensus_and_audit():
     assert main(["audit", "--task-id", "CLI-TEST-01"]) == 0
     assert main(["chat", "Explain", "specifications"]) == 0
     assert main(["verify-audit"]) == 0
+
+
+def test_resolve_safe_path():
+    # Valid path that exists
+    valid = _resolve_safe_path("sample.csv", must_exist=True)
+    assert valid.exists()
+
+    # Non-existent file raises FileNotFoundError
+    with pytest.raises(FileNotFoundError):
+        _resolve_safe_path("nonexistent_file_xyz.csv", must_exist=True)
+
+    # Output path (does not need to exist)
+    out = _resolve_safe_path("output_results.csv", must_exist=False)
+    assert isinstance(out, Path)
+
+
+def test_batch_cli_with_sample_csv():
+    """Test batch processing with the included sample.csv."""
+    with tempfile.TemporaryDirectory() as tmpdir:
+        out_file = os.path.join(tmpdir, "test_output.csv")
+        result = main(["batch", "-i", "sample.csv", "-o", out_file])
+        assert result == 0
+        assert os.path.exists(out_file)
+        with open(out_file, "r") as f:
+            content = f.read()
+            assert "overall_urgency" in content
+
+
+def test_batch_cli_missing_input():
+    """Test batch CLI gracefully handles missing input file."""
+    result = main(["batch", "-i", "nonexistent_xyz.csv"])
+    assert result == 1
+
+
+def test_phi_guard_redaction():
+    """Test that PHIGuard.redact_phi properly redacts sensitive data."""
+    text_with_phi = "Patient John Doe MRN-12345678 has phone 555-123-4567"
+    redacted = PHIGuard.redact_phi(text_with_phi)
+    assert "John Doe" not in redacted
+    assert "MRN-12345678" not in redacted
+    assert "555-123-4567" not in redacted
+    assert "[REDACTED_IDENTIFIER]" in redacted
