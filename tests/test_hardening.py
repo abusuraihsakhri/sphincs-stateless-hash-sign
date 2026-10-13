@@ -63,3 +63,19 @@ def test_api_requires_key(monkeypatch):
     assert ok.status_code == 200
     assert ok.json()["overall_urgency"] == "ROUTINE"
     assert client.get("/api/audit/logs", headers={"X-API-Key": "local-test-api-key"}).status_code == 200
+
+
+def test_returned_log_entry_is_a_snapshot():
+    ledger = AuditTrail(secret_key="unit-test-secret")
+    returned = ledger.log("a", "b", "evaluate", {"outcome": "ok"})
+    returned["event_type"] = "forged"
+    assert ledger.verify_integrity()
+    assert ledger.get_trail()[0]["event_type"] == "evaluate"
+
+
+def test_signed_metadata_field_boundaries_cannot_be_shifted():
+    ledger = AuditTrail(secret_key="unit-test-secret")
+    ledger.log("alice|team", "admin", "evaluate", {"result": "ok"})
+    ledger.logs[0]["actor"] = "alice"
+    ledger.logs[0]["actor_tier"] = "team|admin"
+    assert not ledger.verify_integrity()

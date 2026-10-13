@@ -43,11 +43,10 @@ jobs:
       run: |
         pytest -v
 
-    - name: Security SAST & Zero-PHI Audit
+    - name: Check audit verifier initialization
       run: |
         python -c "
         from agents.base import PHIGuard, AuditLogger
-        import pytest
         assert AuditLogger.verify_integrity() is True
-        print('Security & Zero-PHI Audit Passed!')
+        print('Audit verifier initialization passed')
         "
