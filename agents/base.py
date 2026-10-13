@@ -1,5 +1,5 @@
 """
-Enterprise Security, PHI Outbound Guard, and HMAC-SHA256 Audit Trail.
+Illustrative identifier-pattern filter and local HMAC-SHA256 audit trail.
 
 """
 import os
@@ -8,6 +8,7 @@ import json
 import time
 import hmac
 import hashlib
+from copy import deepcopy
 from typing import Dict, Any, List, Optional
 from datetime import datetime, timezone
 from pydantic import BaseModel, Field
@@ -24,7 +25,7 @@ PHI_PATTERNS = [
 
 
 class SecurityException(Exception):
-    """Raised when outbound data violates HIPAA Safe Harbor or contains raw PHI."""
+    """Raised when a limited identifier-pattern heuristic finds sensitive-looking text."""
     pass
 
 
@@ -78,8 +79,6 @@ class AuditTrail:
         audit_id = f"AUDIT-{int(time.time()*1000)}-{len(self.logs)+1}"
         ts = datetime.now(timezone.utc).isoformat()
         prev_hash = self.logs[-1]["current_hash"] if self.logs else "GENESIS_BLOCK_0000000000000000"
-        sign_string = f"{audit_id}|{ts}|{actor}|{actor_tier}|{event_type}|{payload_hash}|{prev_hash}"
-        signature = hmac.new(self.secret_key, sign_string.encode("utf-8"), hashlib.sha256).hexdigest()
         entry = {
             "audit_id": audit_id,
             "timestamp": ts,
@@ -88,20 +87,38 @@ class AuditTrail:
             "event_type": event_type,
             "payload_hash": payload_hash,
             "prev_hash": prev_hash,
-            "current_hash": signature,
         }
+        entry["current_hash"] = self._sign_entry(entry)
         self.logs.append(entry)
-        return entry
+        return deepcopy(entry)
+
+    def _sign_entry(self, entry: Dict[str, Any]) -> str:
+        """Authenticate an unambiguous, ordered metadata encoding."""
+        fields = ("audit_id", "timestamp", "actor", "actor_tier",
+                  "event_type", "payload_hash", "prev_hash")
+        encoded = json.dumps([entry[name] for name in fields],
+                             ensure_ascii=False, separators=(",", ":")).encode("utf-8")
+        return hmac.new(self.secret_key, encoded, hashlib.sha256).hexdigest()
 
     def verify_integrity(self) -> bool:
-        for i, entry in enumerate(self.logs):
-            prev = self.logs[i-1]["current_hash"] if i > 0 else "GENESIS_BLOCK_0000000000000000"
-            if entry["prev_hash"] != prev:
+        """Recompute every HMAC and enforce the complete predecessor chain."""
+        previous = "GENESIS_BLOCK_0000000000000000"
+        for entry in self.logs:
+            try:
+                if entry["prev_hash"] != previous:
+                    return False
+                expected = self._sign_entry(entry)
+                actual = entry["current_hash"]
+                if not isinstance(actual, str) or not hmac.compare_digest(expected, actual):
+                    return False
+                previous = actual
+            except (KeyError, TypeError, ValueError):
                 return False
         return True
 
     def get_trail(self) -> List[Dict[str, Any]]:
-        return self.logs
+        """Return a snapshot so callers cannot mutate the internal ledger."""
+        return deepcopy(self.logs)
 
 
 GLOBAL_AUDIT = AuditTrail()

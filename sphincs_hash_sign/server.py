@@ -15,7 +15,7 @@ def create_app():
 
         app = FastAPI(
             title="SLH-DSA / SPHINCS+ Stateless Hash-Based Post-Quantum Signature Supervisor",
-            description="NIST FIPS 205 stateless hash-based signature scheme executing WOTS+ one-time signatures, FORS few-time trees, and multi-layer hypertree authentication.",
+            description="Illustrative threshold-alert supervisor only; does not implement FIPS 205 signing or verification.",
             version="2.0.0-FRONTIER",
         )
 

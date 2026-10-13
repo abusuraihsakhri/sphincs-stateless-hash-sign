@@ -1,181 +1,64 @@
 # Sphincs Stateless Hash Sign
 
-> **Domain:** Post-Quantum Cryptography & Zero-Knowledge Architecture
-> **Standards:** NIST FIPS 203/204/205, NIST SP 800-90B, ISO/IEC 17825
+A deterministic **threshold-alert demonstration** with a Python CLI, FastAPI service, and standalone browser interface.
 
-<div align="center">
+**Scope:** Despite the repository name, this project does **not** implement SPHINCS+, SLH-DSA, WOTS+, FORS, XMSS, cryptographic key generation, signature generation, or signature verification. Its arbitrary numeric thresholds and descriptor checks are **not** NIST FIPS 205 conformance criteria, nor is the project a FIPS-certified cryptographic implementation. See the [FIPS 205 standard](https://csrc.nist.gov/pubs/fips/205/final).
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-![Python](https://img.shields.io/badge/Python-3.10%20%7C%203.11%20%7C%203.12-3776AB.svg?logo=python&logoColor=white)
-![FastAPI](https://img.shields.io/badge/FastAPI-0.111-009688.svg?logo=fastapi&logoColor=white)
-![Audit Trail](https://img.shields.io/badge/Audit-HMAC--SHA256_Tamper--Evident-brightgreen.svg)
-![Zero-PHI Guard](https://img.shields.io/badge/Guard-Zero--PHI_Outbound-blue.svg)
-![Docker](https://img.shields.io/badge/Docker-Ready-2496ED.svg?logo=docker&logoColor=white)
+## Features
 
-</div>
+- Three deterministic workers evaluate a primary metric (example threshold 25), a secondary metric (example threshold 12), a critical flag, and anomaly keywords.
+- Python CLI: single evaluation, batch CSV evaluation, chat/demo response, and in-process audit verification.
+- HMAC-SHA256 chained **local audit log** with re-verification of message authentication codes; logs are process-local and ephemeral unless the application is extended with durable storage.
+- FastAPI endpoints with API-key access control for evaluations, chat, and audit logs.
+- An offline browser demo in [web/index.html](web/index.html). It runs entirely in JavaScript; no server, network calls, secrets, or browser Python runtime are required.
 
----
+**Privacy:** The browser demo does not send entered values anywhere and does not store them. The API accepts user-provided values on the server and retains in-memory evaluation dossiers. The Python identifier filter uses limited regular expressions and is **not** a comprehensive PHI detector, de-identification process, or HIPAA compliance guarantee. Avoid using real patient identifiers.
 
-## 📖 What It Does
+## Python installation
 
-**Sphincs Stateless Hash Sign** is a post-quantum cryptographic analytical platform implementing NIST FIPS 205 SLH-DSA stateless hash-based signature supervision with WOTS+ and FORS trees. It provides multi-worker evaluation, HMAC-SHA256 tamper-evident audit trails, and zero-PHI outbound data protection.
+Requires Python 3.9 or later (CI currently covers 3.10–3.12).
 
----
-
-## ⚙️ Key Capabilities
-
-- **Multi-Worker Evaluation:** InvariantQCWorker, SafetyEscalationWorker, and ProtocolConformanceWorker analyze payloads with domain-specific thresholds.
-- **HMAC-SHA256 Audit Trail:** Cryptographically chained, tamper-evident logs for every task evaluation and state transition.
-- **Zero-PHI Outbound Guard:** Active pattern inspection blocking SSNs, MRNs, phone numbers, and patient identifiers from outbound data.
-- **FastAPI REST API:** OpenAPI 3.1 endpoints with health, metrics, audit, and chat capabilities.
-- **Prometheus Telemetry:** Operational metrics export at `/metrics`.
-- **Batch Processing:** CSV batch input/output for high-throughput evaluation.
-- **Active Learning Calibration:** Bayesian weight tracking for worker reliability.
-
----
-
-## 💻 Installation
-
-```bash
-# Clone the repository
-git clone https://github.com/abusuraihsakhri/sphincs-stateless-hash-sign.git
-cd sphincs-stateless-hash-sign
-
-# Install dependencies
-pip install fastapi uvicorn pydantic pytest
-
-# Optional: Set audit secret key (recommended for production)
-export AUDIT_SECRET_KEY="your-secure-random-key-here"
-```
-
----
-
-## 💻 CLI Usage
-
-### 1. Single Task Evaluation
-```bash
-python cli.py audit --task-id TASK-001 --target KEY-01 --primary 28.5 --secondary 14.2 --critical --status DISCORDANT
-```
-
-### 2. Supervisory Chat Query
-```bash
-python cli.py chat "What is the system status?"
-```
-
-### 3. Batch CSV Processing
-```bash
-python cli.py batch -i sample.csv -o results.csv
-```
-
-### 4. Verify Audit Trail Integrity
-```bash
-python cli.py verify-audit
-```
-
-### 5. Launch REST API Server
-```bash
-python cli.py serve --host 127.0.0.1 --port 8000
-```
-
-### CLI Parameters
-
-| Parameter | Description | Default |
-|:----------|:------------|:--------|
-| `--task-id` | Unique task identifier | TASK-2026-001 |
-| `--target` | Target entity identifier | KEY-TARGET-01 |
-| `--primary` | Primary metric value (float) | 28.5 |
-| `--secondary` | Secondary metric value (float) | 14.2 |
-| `--critical` | Enable critical flag | False |
-| `--status` | Status descriptor | DISCORDANT |
-| `-i, --input` | Batch input CSV path (required for batch) | - |
-| `-o, --output` | Batch output CSV path | results.csv |
-
----
-
-## 🌐 REST API Endpoints
-
-| Method | Endpoint | Description |
-|:-------|:---------|:------------|
-| GET | `/health` | System health check |
-| GET | `/metrics` | Prometheus operational metrics |
-| POST | `/api/audit` | Submit task for evaluation |
-| POST | `/api/chat` | Supervisory chat query |
-| GET | `/api/audit/logs` | Retrieve and verify HMAC audit trail |
-
----
-
-## 🧪 Testing
-
-Run the automated test suite:
-
-```bash
+~~~bash
+python -m pip install -e ".[dev]"
 pytest -v
-```
+~~~
 
-Execute high-throughput batch simulation benchmarks:
+For CLI use without server/testing extras:
 
-```bash
-python simulator.py 1000
-```
+~~~bash
+python -m pip install -e .
+sphincs-stateless-hash-sign audit --task-id DEMO-001 --target KEY-01 --primary 29 --secondary 14
+sphincs-stateless-hash-sign chat "What is this demo?"
+sphincs-stateless-hash-sign batch -i sample.csv -o results.csv
+sphincs-stateless-hash-sign verify-audit
+~~~
 
----
+An audit ledger exists only within a running Python process. Running `verify-audit` as a separate CLI process verifies its own ledger, **not** records from a prior command.
 
-## 🐳 Container Deployment
+## Browser interface
 
-```bash
-docker build -t sphincs-stateless-hash-sign .
-docker run -p 8000:8000 -e AUDIT_SECRET_KEY=your-secret-key sphincs-stateless-hash-sign
-```
+Open `index.html` or `web/index.html` in a browser. The form evaluates the same example thresholds as the top-level Python workers and displays a locally calculated JSON dossier. No cryptographic signature or HMAC is produced by the browser. It is usable without Pyodide because the demonstration is straightforward JavaScript.
 
-Or using Docker Compose:
+## REST API
 
-```bash
-docker-compose up -d
-```
+~~~bash
+export AUDIT_SECRET_KEY="replace-with-a-long-random-server-secret"
+export AUDIT_API_KEY="replace-with-a-different-long-random-api-key"
+python -m pip install -e ".[server]"
+sphincs-stateless-hash-sign serve --host 127.0.0.1 --port 8000
+curl -H "X-API-Key: $AUDIT_API_KEY" -H "Content-Type: application/json" \
+  -d '{"task_id":"T-1","target_identifier":"EXAMPLE","primary_metric":29,"secondary_metric":14}' \
+  http://127.0.0.1:8000/api/audit
+~~~
 
----
+`GET /health` and `GET /metrics` are public operational endpoints; `POST /api/audit`, `POST /api/chat`, and `GET /api/audit/logs` require `X-API-Key`. If no key is configured, protected endpoints fail closed. Do not expose the service directly to the public Internet without TLS, rate limiting, and additional security controls.
 
-## 🛡️ Security Architecture
+## Docker
 
-- **Zero-PHI Outbound Interceptor:** AST and regex inspection blocking SSNs, MRNs, phone numbers, and patient identifiers.
-- **Tamper-Evident HMAC-SHA256 Audit Trail:** Chained, cryptographically signed logs for every evaluation.
-- **Input Validation:** Path traversal protection and bounds checking on all CLI inputs.
-- **Ephemeral Key Generation:** If `AUDIT_SECRET_KEY` is not set, a random session key is generated with a warning.
+Set `AUDIT_SECRET_KEY` and `AUDIT_API_KEY` in your shell or an untracked `.env` file (see `.env.example`), then run `docker compose up --build`. Docker Compose binds port 8000 to loopback only. Secrets must never be checked into Git.
 
----
+## Development and limitations
 
-## 📁 Project Structure
+Run `python -m compileall -q agents sphincs_hash_sign tests cli.py` and `pytest`; GitHub Actions executes this against multiple Python versions. The secondary `sphincs_hash_sign` package retains its earlier evaluation API, whereas the installed console script invokes the top-level CLI. The bundled test suite checks demonstration behavior, not FIPS 205 test vectors, side-channel resistance, or production security.
 
-```
-sphincs-stateless-hash-sign/
-├── agents/                  # Enterprise multi-worker evaluation engine
-│   ├── api.py              # FastAPI REST server
-│   ├── base.py             # Security, PHI guard, HMAC audit trail
-│   ├── models.py           # Pydantic data models
-│   ├── supervisor.py       # Master orchestrator
-│   ├── workers.py          # Specialized evaluation workers
-│   ├── metrics.py          # Prometheus metrics collector
-│   ├── streamer.py         # WebSocket telemetry broadcaster
-│   ├── learning.py         # Bayesian calibration engine
-│   └── llm_factory.py      # LLM provider factory
-├── sphincs_hash_sign/      # Frontier SLH-DSA implementation
-│   ├── cli.py              # Frontier CLI
-│   ├── server.py           # Frontier FastAPI server
-│   ├── engine.py           # Core algorithmic engine
-│   ├── agents.py           # WOTS+, FORS, Hypertree agents
-│   └── models.py           # Frontier data models
-├── tests/                  # Pytest test suite
-├── web/index.html          # Operations console UI
-├── cli.py                  # Main CLI entry point
-├── simulator.py            # High-throughput simulation
-├── enrichment.py           # Domain enrichment features
-├── pyproject.toml          # Project configuration
-├── Dockerfile              # Container build
-└── docker-compose.yml      # Container orchestration
-```
-
----
-
-## 📄 License
-
-This project is licensed under the MIT License - see [LICENSE](LICENSE) for details.
+Technology: Python, Pydantic, FastAPI (optional), HTML, CSS, and JavaScript. The browser interface targets current evergreen desktop and mobile browsers. Licensed under the [MIT License](LICENSE).

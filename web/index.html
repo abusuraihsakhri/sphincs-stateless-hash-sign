@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sphincs Stateless Hash Sign — Operations Console</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+
     <style>
         :root {
             --bg: #090d16;
@@ -20,7 +20,7 @@
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
-            font-family: 'Inter', sans-serif;
+            font-family: system-ui, -apple-system, sans-serif;
             background: var(--bg);
             color: var(--text);
             padding: 2rem;
@@ -96,7 +96,7 @@
             border: 1px solid var(--border);
             border-radius: 8px;
             padding: 1rem;
-            font-family: 'JetBrains Mono', monospace;
+            font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
             font-size: 0.85rem;
             color: #10b981;
             height: 380px;
@@ -118,6 +118,19 @@
         }
         .metric-val { font-size: 1.4rem; font-weight: 700; color: #fff; margin-top: 0.25rem; }
         .metric-label { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; }
+        .notice { font-size: .85rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 1rem; }
+        .checkbox-label { display: flex; align-items: center; gap: .5rem; }
+        .checkbox-label input { width: auto; }
+        :focus-visible { outline: 2px solid #93c5fd; outline-offset: 2px; }
+        @media (max-width: 800px) {
+            body { padding: 1rem; }
+            .header { display: block; }
+            .header > div + div { margin-top: 1rem; }
+            .grid { grid-template-columns: 1fr; }
+            .metrics-bar { grid-template-columns: repeat(2, 1fr); }
+            .card { padding: 1rem; }
+            .terminal { height: 310px; }
+        }
     </style>
 </head>
 <body>
@@ -125,112 +138,134 @@
     <div class="header">
         <div class="header-title">
             <h1>Sphincs Stateless Hash Sign</h1>
-            <p>Domain: Clinical & Cryptographic AI | Standard: CAP / CLSI / NIST Standards | LabMind-Atlas Architecture</p>
+            <p>Offline threshold-alert demonstration. No SLH-DSA key generation, signing, or verification.</p>
         </div>
         <div>
-            <span class="badge">Air-Gapped Active</span>
-            <span class="badge" style="background: rgba(16,185,129,0.2); color: #10b981; border-color: #10b981;">Zero-PHI Guard Active</span>
+            <span class="badge">Runs locally in your browser</span>
+            <span class="badge">Not a cryptographic implementation</span>
         </div>
     </div>
 
     <div class="metrics-bar">
         <div class="metric-box">
             <div class="metric-label">System Status</div>
-            <div class="metric-val" style="color: var(--success);" id="m-status">OPTIMAL</div>
+            <div class="metric-val" style="color: var(--success);" id="m-status">READY</div>
         </div>
         <div class="metric-box">
             <div class="metric-label">Tasks Processed</div>
-            <div class="metric-val" id="m-tasks">142</div>
+            <div class="metric-val" id="m-tasks">0</div>
         </div>
         <div class="metric-box">
-            <div class="metric-label">Audit Blocks Signed</div>
-            <div class="metric-val" id="m-audit">142</div>
+            <div class="metric-label">Cryptographic Signatures</div>
+            <div class="metric-val" id="m-audit">N/A</div>
         </div>
         <div class="metric-box">
-            <div class="metric-label">PHI Interceptions</div>
-            <div class="metric-val" style="color: var(--accent);" id="m-phi">0</div>
+            <div class="metric-label">Execution Mode</div>
+            <div class="metric-val" style="color: var(--accent);" id="m-phi">LOCAL</div>
         </div>
     </div>
 
     <div class="grid">
-        <div class="card">
-            <h2>⚙️ Dispatch Distributed Component Audit</h2>
+        <form class="card" id="auditForm">
+            <h2>Evaluate demo thresholds</h2>
+            <p class="notice">Uses arbitrary example limits (primary &gt; 25, secondary &gt; 12) and keyword matching. Do not enter sensitive data. Results are not NIST conformance assessments.</p>
             <div class="form-group">
-                <label>Task / Sample ID</label>
+                <label for="task_id">Task / Sample ID</label>
                 <input type="text" id="task_id" value="TASK-2026-LIVE-01">
             </div>
             <div class="form-group">
-                <label>Target Identifier</label>
+                <label for="target_id">Target Identifier</label>
                 <input type="text" id="target_id" value="SPECIMEN-ALPHA-77">
             </div>
             <div class="form-group">
-                <label>Primary Measurement / Value</label>
+                <label for="primary_metric">Primary Measurement / Value</label>
                 <input type="number" id="primary_metric" value="29.4" step="0.1">
             </div>
             <div class="form-group">
-                <label>Secondary Metric / Kinetic Index</label>
+                <label for="secondary_metric">Secondary Metric / Kinetic Index</label>
                 <input type="number" id="secondary_metric" value="14.8" step="0.1">
             </div>
             <div class="form-group">
-                <label>Status / Phenotype Descriptor</label>
+                <label for="status_descriptor">Status / Phenotype Descriptor</label>
                 <input type="text" id="status_descriptor" value="DISCORDANT_ANOMALY">
             </div>
             <div class="form-group">
-                <label><input type="checkbox" id="is_critical" checked> Trigger Emergency / Critical Flag</label>
+                <label class="checkbox-label"><input type="checkbox" id="is_critical" checked> Apply user-defined critical flag</label>
             </div>
-            <button class="btn" onclick="runAudit()">Execute Distributed Component Audit</button>
-        </div>
+            <button class="btn" type="submit">Evaluate locally</button>
+        </form>
 
         <div class="card">
-            <h2>📊 Real-Time Consensus Dossier & Audit Log</h2>
-            <div class="terminal" id="outputConsole">// Sphincs Stateless Hash Sign Operations Console Ready
-// Connection established with Air-Gapped Supervisor
-// Cryptographic HMAC-SHA256 audit ledger loaded.
-// Ready for live task payload dispatch...</div>
+            <h2>Local evaluation result</h2>
+            <div class="terminal" id="outputConsole" role="status" aria-live="polite">Ready. Enter example values and select Evaluate locally. No network requests or cryptographic operations are performed.</div>
         </div>
     </div>
 
     <script>
-        async function runAudit() {
-            const consoleEl = document.getElementById('outputConsole');
-            consoleEl.innerText = "// Dispatching task across specialized workers...
-// Invoking InvariantQCWorker, SafetyEscalationWorker, ProtocolWorker...";
+        "use strict";
+        const form = document.getElementById("auditForm");
+        const output = document.getElementById("outputConsole");
+        let processed = 0;
 
-            const payload = {
-                task_id: document.getElementById('task_id').value,
-                target_identifier: document.getElementById('target_id').value,
-                primary_metric: parseFloat(document.getElementById('primary_metric').value),
-                secondary_metric: parseFloat(document.getElementById('secondary_metric').value),
-                status_descriptor: document.getElementById('status_descriptor').value,
-                is_critical_flag: document.getElementById('is_critical').checked
-            };
-
-            try {
-                const res = await fetch('/api/audit', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-                const data = await res.json();
-                consoleEl.innerText = JSON.stringify(data, null, 2);
-                document.getElementById('m-tasks').innerText = parseInt(document.getElementById('m-tasks').innerText) + 1;
-                document.getElementById('m-audit').innerText = parseInt(document.getElementById('m-audit').innerText) + 1;
-            } catch (err) {
-                consoleEl.innerText = "// Offline / Simulation Output:\n" + JSON.stringify({
-                    dossier_id: "DOSSIER-SIM-" + Math.floor(Math.random()*10000),
-                    system: "sphincs-stateless-hash-sign",
-                    domain: "Clinical & Cryptographic AI",
-                    task_id: payload.task_id,
-                    overall_urgency: payload.is_critical_flag ? "CRITICAL_STAT_PANIC" : "ELEVATED_RISK",
-                    integrity_status: "DISCORDANT_ANOMALY",
-                    alerts: [
-                        { worker: "InvariantQCWorker", alert: "Primary metric exceeds upper reference bound" },
-                        { worker: "SafetyEscalationWorker", alert: "Critical emergency interlock flag active" }
-                    ],
-                    audit_hash: "HMAC_SHA256_e83f9a72b941d6c381f9"
-                }, null, 2);
+        function evaluate(payload) {
+            const alerts = [];
+            if (payload.primary_metric > 25) {
+                alerts.push({worker: "InvariantQCWorker", urgency: "ELEVATED_RISK",
+                    summary: "Primary example threshold exceeded (25)"});
             }
+            if (payload.is_critical_flag || payload.secondary_metric > 12) {
+                alerts.push({worker: "SafetyEscalationWorker",
+                    urgency: payload.is_critical_flag ? "CRITICAL_STAT_PANIC" : "ELEVATED_RISK",
+                    summary: "Secondary example threshold exceeded or critical flag set"});
+            }
+            if (/DISCORDANT|ANOMALY|MUTANT|VIOLATION|FAIL|REJECT/i.test(payload.status_descriptor)) {
+                alerts.push({worker: "ProtocolConformanceWorker", urgency: "ELEVATED_RISK",
+                    summary: "Example anomaly keyword detected"});
+            }
+            const critical = alerts.some(a => a.urgency === "CRITICAL_STAT_PANIC");
+            const urgency = critical ? "CRITICAL_STAT_PANIC" : alerts.length ? "ELEVATED_RISK" : "ROUTINE";
+            return {
+                evaluation_mode: "LOCAL_DEMONSTRATION_ONLY",
+                task_id: payload.task_id,
+                target_identifier: payload.target_identifier,
+                overall_urgency: urgency,
+                integrity_status: "NOT_ASSESSED",
+                total_alerts: alerts.length,
+                critical_alerts_count: alerts.filter(a => a.urgency === "CRITICAL_STAT_PANIC").length,
+                alerts: alerts,
+                cryptographic_signature: null,
+                note: "No FIPS 205 conformance testing, key generation, signing, or verification occurs."
+            };
         }
+
+        form.addEventListener("submit", function(event) {
+            event.preventDefault();
+            const rawPrimary = document.getElementById("primary_metric").value.trim();
+            const rawSecondary = document.getElementById("secondary_metric").value.trim();
+            const primary = Number(rawPrimary);
+            const secondary = Number(rawSecondary);
+            const taskId = document.getElementById("task_id").value.trim();
+            const target = document.getElementById("target_id").value.trim();
+            if (!taskId || !target || taskId.length > 128 || target.length > 128 ||
+                !rawPrimary || !rawSecondary || !Number.isFinite(primary) || !Number.isFinite(secondary)) {
+                output.textContent = "Enter nonempty identifiers (max 128 characters) and finite numeric metrics.";
+                return;
+            }
+            const payload = {
+                task_id: taskId,
+                target_identifier: target,
+                primary_metric: primary,
+                secondary_metric: secondary,
+                status_descriptor: document.getElementById("status_descriptor").value,
+                is_critical_flag: document.getElementById("is_critical").checked
+            };
+            const result = evaluate(payload);
+            processed += 1;
+            document.getElementById("m-tasks").textContent = String(processed);
+            document.getElementById("m-status").textContent = result.overall_urgency === "ROUTINE"
+                ? "ROUTINE" : result.overall_urgency === "ELEVATED_RISK" ? "ELEVATED" : "CRITICAL";
+            output.textContent = JSON.stringify(result, null, 2);
+        });
     </script>
 </body>
 </html>

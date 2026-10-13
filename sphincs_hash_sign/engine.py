@@ -18,7 +18,7 @@ class FrontierDomainEngine:
         if value > cls.PRIMARY_BOUND:
             return {
                 "summary": "Primary Domain Boundary Deviation",
-                "details": f"Parameter value ({value:.3f}) exceeds operational threshold ({cls.PRIMARY_BOUND:.1f}) under NIST FIPS 205 (SLH-DSA Standard).",
+                "details": f"Parameter value ({value:.3f}) exceeds operational threshold ({cls.PRIMARY_BOUND:.1f}) (illustrative limit; not a FIPS 205 requirement).",
                 "remediation": "Engage parameter recalibration and algorithmic verification routine.",
             }
         return None
@@ -39,7 +39,7 @@ class FrontierDomainEngine:
         if any(flag in desc_upper for flag in ["VIOLATION", "DISCORDANT", "ANOMALY", "MUTANT", "LEAK"]):
             return {
                 "summary": "Specification / Protocol Anomaly Identified",
-                "details": f"Telemetry status flag '{descriptor}' violates NIST FIPS 205 (SLH-DSA Standard) conformance matrix.",
+                "details": f"Telemetry status flag '{descriptor}' matches an illustrative anomaly keyword (not a FIPS 205 conformance test).",
                 "remediation": "Execute automated rollback or secondary consensus verification.",
             }
         return None

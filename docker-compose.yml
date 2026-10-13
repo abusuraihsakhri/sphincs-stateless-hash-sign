@@ -1,14 +1,12 @@
-version: '3.8'
-
 services:
   sphincs-stateless-hash-sign:
     build: .
-    container_name: sphincs-stateless-hash-sign
     ports:
-      - "8000:8000"
+      - "127.0.0.1:8000:8000"
     environment:
-      - AUDIT_SECRET_KEY=sphincs-stateless-hash-sign-prod-audit-key-2026
-      - MODEL_PROVIDER=mock
+      AUDIT_SECRET_KEY: "${AUDIT_SECRET_KEY:?Set AUDIT_SECRET_KEY in your environment}"
+      AUDIT_API_KEY: "${AUDIT_API_KEY:?Set AUDIT_API_KEY in your environment}"
+      MODEL_PROVIDER: "mock"
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]

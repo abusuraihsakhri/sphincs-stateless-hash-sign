@@ -105,6 +105,6 @@ class StatelessHashCoordinator:
         if "status" in q or "ledger" in q:
             return f"SLH-DSA / SPHINCS+ Stateless Hash-Based Post-Quantum Signature Supervisor currently managing {len(self.execution_ledger)} execution tasks in air-gapped memory."
         elif "standard" in q or "spec" in q:
-            return "Active runtime operating strictly according to NIST FIPS 205 (SLH-DSA Standard) specifications."
+            return "NIST FIPS 205 (SLH-DSA Standard) is NOT implemented; this is a numeric alert demonstration."
         else:
-            return f"SLH-DSA / SPHINCS+ Stateless Hash-Based Post-Quantum Signature Supervisor executive coordinator online. Zero-telemetry on-premises surveillance active."
+            return "Local demonstration coordinator ready; no cryptographic keys or signatures are processed."

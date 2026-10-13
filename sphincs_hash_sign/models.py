@@ -1,7 +1,7 @@
 """
 Data Models & Telemetry Definitions for SLH-DSA / SPHINCS+ Stateless Hash-Based Post-Quantum Signature Supervisor.
 Domain: Post-Quantum Cryptography & Zero-Knowledge
-Standard: NIST FIPS 205 (SLH-DSA Standard)
+Not a cryptographic signature implementation
 """
 import datetime
 from dataclasses import dataclass, field
@@ -35,7 +35,7 @@ class AgentTelemetryAlert:
     summary: str
     technical_details: str
     actionable_remediation: str
-    standard_reference: str = "NIST FIPS 205 (SLH-DSA Standard)"
+    standard_reference: str = "Illustrative thresholds (not FIPS 205 conformance)"
     timestamp: str = field(default_factory=lambda: datetime.datetime.now(datetime.timezone.utc).isoformat())
 
     def to_dict(self) -> Dict[str, Any]:
