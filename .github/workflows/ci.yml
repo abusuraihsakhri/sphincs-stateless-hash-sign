@@ -29,6 +29,16 @@ jobs:
     - name: Compile Python sources
       run: python -m compileall -q agents sphincs_hash_sign tests cli.py simulator.py enrichment.py
 
+    - name: Validate browser JavaScript syntax
+      run: |
+        python - <<'PY'
+        from pathlib import Path
+        html = Path("web/index.html").read_text(encoding="utf-8")
+        script = html.split("<script>", 1)[1].split("</script>", 1)[0]
+        Path("/tmp/sphincs-browser-demo.js").write_text(script, encoding="utf-8")
+        PY
+        node --check /tmp/sphincs-browser-demo.js
+
     - name: Run Pytest Suite
       run: |
         pytest -v

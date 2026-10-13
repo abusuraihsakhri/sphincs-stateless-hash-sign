@@ -1,49 +1,58 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "Sphincs Stateless Hash Sign API",
-    "description": "Enterprise Distributed Component Platform (Clinical & Cryptographic AI) adhering to CAP / CLSI / NIST Standards.",
-    "version": "3.0.0-ENTERPRISE",
-    "contact": {
-      "name": "Dr. Abu Suraih Sakhri",
-      "url": "https://github.com/abusuraihsakhri"
-    }
+    "title": "Sphincs Stateless Hash Sign - Demonstration API",
+    "version": "3.0.0",
+    "description": "Deterministic threshold alerts; no FIPS 205 signing or verification."
   },
   "paths": {
     "/health": {
       "get": {
-        "summary": "Health and metadata check",
+        "summary": "Readiness metadata",
         "responses": {
           "200": {
-            "description": "System optimal"
+            "description": "Service is running"
           }
         }
       }
     },
     "/metrics": {
       "get": {
-        "summary": "Prometheus operational metrics",
+        "summary": "Process-local operational counts",
         "responses": {
           "200": {
-            "description": "Prometheus text metrics"
+            "description": "JSON counters"
           }
         }
       }
     },
     "/api/audit": {
       "post": {
-        "summary": "Dispatch task payload across specialized workers",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "summary": "Evaluate example thresholds",
         "requestBody": {
+          "required": true,
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
+                "required": [
+                  "task_id",
+                  "target_identifier",
+                  "primary_metric"
+                ],
                 "properties": {
                   "task_id": {
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 128
                   },
                   "target_identifier": {
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 128
                   },
                   "primary_metric": {
                     "type": "number"
@@ -57,58 +66,67 @@
                   "is_critical_flag": {
                     "type": "boolean"
                   }
-                },
-                "required": [
-                  "task_id",
-                  "target_identifier",
-                  "primary_metric"
-                ]
+                }
               }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "Consensus dossier with HMAC signature"
+            "description": "Local alert dossier"
+          },
+          "401": {
+            "description": "Invalid API key"
+          },
+          "503": {
+            "description": "API key not configured"
           }
         }
       }
     },
     "/api/chat": {
       "post": {
-        "summary": "Air-gapped supervisory conversational assistant",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "query": {
-                    "type": "string"
-                  }
-                },
-                "required": [
-                  "query"
-                ]
-              }
-            }
+        "security": [
+          {
+            "ApiKeyAuth": []
           }
-        },
+        ],
+        "summary": "Deterministic mock response",
         "responses": {
           "200": {
-            "description": "Supervisory response"
+            "description": "Demo response"
+          },
+          "401": {
+            "description": "Invalid API key"
           }
         }
       }
     },
     "/api/audit/logs": {
       "get": {
-        "summary": "Retrieve and cryptographically verify HMAC audit trail",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "summary": "Read process-local HMAC audit history",
         "responses": {
           "200": {
-            "description": "Cryptographic audit trail"
+            "description": "Audit entries and verified flag"
+          },
+          "401": {
+            "description": "Invalid API key"
           }
         }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-API-Key"
       }
     }
   }
